@@ -29,8 +29,16 @@ export function registerTools(
     {
       service: z.string().min(1).describe("Service name (e.g. 'github', 'slack', 'stripe')"),
       credential: z.string().min(1).describe("The API key, token, or secret to store"),
+      self_agent_id: z.string().optional().describe("Self Protocol Agent ID for ZK identity verification"),
     },
-    async ({ service, credential }) => {
+    async ({ service, credential, self_agent_id }) => {
+      const identity = await verifyAgentIdentity(self_agent_id);
+      if (!identity.verified) {
+        return {
+          content: [{ type: "text", text: `Access denied: ${identity.reason}` }],
+          isError: true,
+        };
+      }
       try {
         vault.store(service, credential);
         return {
@@ -135,8 +143,16 @@ export function registerTools(
     "Remove a stored credential from the vault. Human operator use only.",
     {
       service: z.string().min(1).describe("Service name to remove"),
+      self_agent_id: z.string().optional().describe("Self Protocol Agent ID for ZK identity verification"),
     },
-    async ({ service }) => {
+    async ({ service, self_agent_id }) => {
+      const identity = await verifyAgentIdentity(self_agent_id);
+      if (!identity.verified) {
+        return {
+          content: [{ type: "text", text: `Access denied: ${identity.reason}` }],
+          isError: true,
+        };
+      }
       const removed = vault.remove(service);
       return {
         content: [

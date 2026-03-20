@@ -13,20 +13,27 @@ export interface IdentityVerificationResult {
   reason?: string;
 }
 
+/**
+ * Verify an agent's Self Protocol identity via ZK proof.
+ *
+ * Default (strict): denies access if no agent ID is provided or if
+ * Self Protocol is unreachable. Set SELF_PERMISSIVE_MODE=true to
+ * allow through during development.
+ */
 export async function verifyAgentIdentity(
   selfAgentId: string | undefined
 ): Promise<IdentityVerificationResult> {
-  const strictMode = process.env['SELF_STRICT_MODE'] === 'true';
+  const permissive = process.env['SELF_PERMISSIVE_MODE'] === 'true';
 
   if (!selfAgentId || selfAgentId.trim() === '') {
-    if (strictMode) {
-      return {
-        verified: false,
-        reason: 'No Self Agent ID provided. Set SELF_STRICT_MODE=false to allow unauthenticated access in development.',
-      };
+    if (permissive) {
+      console.warn('[Cloak] No Self Agent ID provided — running in permissive mode.');
+      return { verified: true, reason: 'Permissive mode: no Self Agent ID required.' };
     }
-    console.warn('[Cloak] No Self Agent ID provided — running in permissive mode.');
-    return { verified: true, reason: 'Permissive mode: no Self Agent ID required.' };
+    return {
+      verified: false,
+      reason: 'No Self Agent ID provided. Set SELF_PERMISSIVE_MODE=true to bypass in development.',
+    };
   }
 
   try {
@@ -51,16 +58,16 @@ export async function verifyAgentIdentity(
 
     const errorText = await res.text().catch(() => '');
     console.warn(`[Cloak] Self Protocol returned HTTP ${res.status}: ${errorText}`);
-    if (strictMode) {
-      return { verified: false, reason: `Self Protocol returned HTTP ${res.status}.` };
+    if (permissive) {
+      return { verified: true, agentId: selfAgentId, reason: `Permissive mode: Self Protocol returned HTTP ${res.status}.` };
     }
-    return { verified: true, agentId: selfAgentId, reason: `Permissive mode: Self Protocol returned HTTP ${res.status}.` };
+    return { verified: false, reason: `Self Protocol returned HTTP ${res.status}.` };
 
   } catch (err) {
     console.warn('[Cloak] Self Protocol unreachable:', err);
-    if (strictMode) {
-      return { verified: false, reason: `Self Protocol unreachable: ${String(err)}` };
+    if (permissive) {
+      return { verified: true, agentId: selfAgentId, reason: 'Permissive mode: Self Protocol unreachable.' };
     }
-    return { verified: true, agentId: selfAgentId, reason: 'Permissive mode: Self Protocol unreachable.' };
+    return { verified: false, reason: `Self Protocol unreachable: ${String(err)}` };
   }
 }
