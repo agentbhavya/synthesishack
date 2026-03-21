@@ -1,20 +1,65 @@
-import { useState } from "react";
-import { Shield, Lock, Activity } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Shield, Lock, Activity, Sparkles } from "lucide-react";
 import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";
 import { VaultDashboard } from "./components/VaultDashboard";
 import { ExecutePanel } from "./components/ExecutePanel";
 import { AuditLog } from "./components/AuditLog";
+import { OraclePanel } from "./components/OraclePanel";
+import { AuthForm } from "./components/AuthForm";
+import { supabase } from "./supabase";
+import { setAuthToken } from "./api";
+import type { Session } from "@supabase/supabase-js";
 
-type Tab = "home" | "vault" | "execute" | "audit";
+type Tab = "home" | "vault" | "execute" | "audit" | "oracle";
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("home");
   const [executeService, setExecuteService] = useState<string | undefined>();
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthToken(data.session?.access_token ?? null);
+      setAuthLoading(false);
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setAuthToken(session?.access_token ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   function handleExecute(service: string) {
     setExecuteService(service);
     setTab("execute");
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    setTab("home");
+  }
+
+  // Loading auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="font-display text-xs tracking-[0.2em] text-gold opacity-40 uppercase">
+          Entering the vault…
+        </span>
+      </div>
+    );
+  }
+
+  // Not logged in — show auth form
+  if (!session) {
+    return <AuthForm />;
   }
 
   return (
@@ -32,9 +77,16 @@ export default function App() {
           </button>
 
           <div className="flex items-center gap-1">
-            <NavBtn active={tab === "vault"}   onClick={() => setTab("vault")}   icon={<Lock size={12} />}     label="Vault"   />
-            <NavBtn active={tab === "execute"} onClick={() => setTab("execute")} icon={<Shield size={12} />}   label="Execute" />
-            <NavBtn active={tab === "audit"}   onClick={() => setTab("audit")}   icon={<Activity size={12} />} label="Chronicle" />
+            <NavBtn active={tab === "vault"}   onClick={() => setTab("vault")}   icon={<Lock size={12} />}       label="Vault"     />
+            <NavBtn active={tab === "execute"} onClick={() => setTab("execute")} icon={<Shield size={12} />}     label="Execute"   />
+            <NavBtn active={tab === "audit"}   onClick={() => setTab("audit")}   icon={<Activity size={12} />}   label="Chronicle" />
+            <NavBtn active={tab === "oracle"}  onClick={() => setTab("oracle")}  icon={<Sparkles size={12} />}   label="Oracle"    />
+            <button
+              onClick={handleSignOut}
+              className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-display uppercase tracking-widest text-cream-dim hover:text-gold border border-transparent hover:border-ornament transition-all duration-200"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
         {/* gold hairline */}
@@ -45,6 +97,7 @@ export default function App() {
       {tab === "vault"   && <VaultDashboard onExecute={handleExecute} />}
       {tab === "execute" && <ExecutePanel initialService={executeService} onBack={() => setTab("vault")} />}
       {tab === "audit"   && <AuditLog />}
+      {tab === "oracle"  && <OraclePanel />}
     </div>
   );
 }
