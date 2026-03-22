@@ -7,15 +7,28 @@ interface Props {
   onVerified: (selfUserId: string) => void;
 }
 
+const isLocalhost = (url: string) =>
+  url.startsWith("http://localhost") ||
+  url.startsWith("http://127.") ||
+  url.startsWith("http://0.0.0.0");
+
 export function SelfVerification({ onVerified }: Props) {
   const [selfApp, setSelfApp] = useState<SelfApp | null>(null);
   const [userId] = useState(() => crypto.randomUUID());
   const [error, setError] = useState("");
+  const [devMode, setDevMode] = useState(false);
 
   useEffect(() => {
+    const endpoint =
+      process.env.NEXT_PUBLIC_SELF_ENDPOINT ?? "http://localhost:3000";
+
+    // Self SDK rejects localhost endpoints — in dev, show bypass instead
+    if (isLocalhost(endpoint)) {
+      setDevMode(true);
+      return;
+    }
+
     try {
-      const endpoint =
-        process.env.NEXT_PUBLIC_SELF_ENDPOINT ?? "http://localhost:3000";
       const app = new SelfAppBuilder({
         version: 2,
         appName: process.env.NEXT_PUBLIC_SELF_APP_NAME ?? "Cloak",
@@ -33,6 +46,54 @@ export function SelfVerification({ onVerified }: Props) {
       setError("Failed to initialize identity verification.");
     }
   }, [userId]);
+
+  if (devMode) {
+    return (
+      <div className="flex flex-col items-center gap-4 text-center">
+        <div
+          className="px-4 py-3 rounded-sm border"
+          style={{
+            borderColor: "var(--color-ornament)",
+            borderOpacity: 0.5,
+            background: "rgba(0,0,0,0.2)",
+          }}
+        >
+          <p
+            className="font-mono text-xs mb-2"
+            style={{ color: "var(--color-gold)" }}
+          >
+            DEV MODE
+          </p>
+          <p
+            style={{
+              fontFamily: "EB Garamond, serif",
+              fontStyle: "italic",
+              color: "var(--color-cream-dim)",
+              fontSize: "0.8rem",
+            }}
+          >
+            Self Protocol requires a public HTTPS endpoint.
+            <br />
+            Set{" "}
+            <code
+              className="font-mono"
+              style={{ color: "var(--color-gold)", fontSize: "0.75rem" }}
+            >
+              NEXT_PUBLIC_SELF_ENDPOINT=https://cloak-hosted.vercel.app
+            </code>
+            <br />
+            to enable real ZK verification.
+          </p>
+        </div>
+        <button
+          className="btn-primary"
+          onClick={() => onVerified(`dev-bypass-${userId}`)}
+        >
+          Skip Verification (Dev Only)
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-4">
