@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserId, supabaseAdmin } from "@/lib/supabase";
+import { getAuthUserId, supabaseAdmin } from "@/lib/supabase";
 import { CloudVault } from "@/lib/vault";
 import { executeWithVault, SERVICE_ACTIONS, ExecutionParams } from "@/lib/executor";
 
@@ -28,7 +28,7 @@ interface VeniceMessage {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await getUserId(req.headers.get("authorization"));
+  const userId = await getAuthUserId(req);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { messages } = (await req.json()) as {

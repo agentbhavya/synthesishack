@@ -53,8 +53,7 @@ export function SelfVerification({ onVerified }: Props) {
         <div
           className="px-4 py-3 rounded-sm border"
           style={{
-            borderColor: "var(--color-ornament)",
-            borderOpacity: 0.5,
+            borderColor: "rgba(var(--color-ornament-rgb, 180,150,90), 0.5)",
             background: "rgba(0,0,0,0.2)",
           }}
         >

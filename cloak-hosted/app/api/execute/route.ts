@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserId, supabaseAdmin } from "@/lib/supabase";
+import { getAuthUserId, supabaseAdmin } from "@/lib/supabase";
 import { CloudVault } from "@/lib/vault";
 import { executeWithVault } from "@/lib/executor";
 
 export async function POST(req: NextRequest) {
-  const userId = await getUserId(req.headers.get("authorization"));
+  const userId = await getAuthUserId(req);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { service, action, params } = await req.json();
   if (!service || !action) return NextResponse.json({ error: "service and action required" }, { status: 400 });
