@@ -7,10 +7,12 @@ interface Props {
   onVerified: (selfUserId: string) => void;
 }
 
-const isLocalhost = (url: string) =>
-  url.startsWith("http://localhost") ||
-  url.startsWith("http://127.") ||
-  url.startsWith("http://0.0.0.0");
+// SelfAppBuilder checks window.location.hostname internally — must check page origin, not endpoint URL
+const isLocalhostPage = () =>
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname === "0.0.0.0");
 
 export function SelfVerification({ onVerified }: Props) {
   const [selfApp, setSelfApp] = useState<SelfApp | null>(null);
@@ -22,8 +24,8 @@ export function SelfVerification({ onVerified }: Props) {
     const endpoint =
       process.env.NEXT_PUBLIC_SELF_ENDPOINT ?? "http://localhost:3000";
 
-    // Self SDK rejects localhost endpoints — in dev, show bypass instead
-    if (isLocalhost(endpoint)) {
+    // Self SDK rejects when window.location.hostname is localhost — show bypass instead
+    if (isLocalhostPage()) {
       setDevMode(true);
       return;
     }
