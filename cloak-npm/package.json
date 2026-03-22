@@ -1,0 +1,37 @@
+{
+  "name": "cloak-vault",
+  "version": "0.1.0",
+  "description": "Zero-exposure credential vault for AI agents — AES-256-GCM encrypted, MCP-native",
+  "type": "module",
+  "bin": {
+    "cloak-vault": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc && node -e \"const fs=require('fs');const f='dist/cli.js';fs.writeFileSync(f,'#!/usr/bin/env node\\n'+fs.readFileSync(f,'utf8'));fs.chmodSync(f,0o755);\"",
+    "dev": "node --experimental-strip-types src/cli.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "credentials",
+    "vault",
+    "claude",
+    "encryption"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.6.3"
+  }
+}
