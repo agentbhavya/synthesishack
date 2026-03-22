@@ -182,7 +182,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 | AI orchestration | Venice AI — llama-3.3-70b, tool calling | ✅ Built |
 | Agent identity | Self Protocol ZK proof verification | ✅ In executor (verify_proof, check_nullifier) |
 | Dashboard UI | React 18, Vite, Tailwind CSS | ✅ Built |
-| Web3 auth | Slice ERC-8128 (wallet signing, replaces Supabase) | 🔜 Pending |
+| Web3 auth | Slice ERC-8128 (wallet signing, Celo mainnet) | ✅ Built |
 
 ---
 
@@ -206,13 +206,18 @@ Self Protocol is implemented in the executor as a vault service:
 
 Full identity gating (`SELF_STRICT_MODE`) — requiring Self verification before any `execute_with_credential` call — is the next step.
 
-### Slice ERC-8128 🔜 (planned)
-Slice replaces Supabase email/password as the auth primitive:
-- Human dashboard access via wallet signing (SIWE-style)
-- Agent API access via ERC-8128 signature challenge
-- Makes the entire stack secret-less end to end — no passwords, no static tokens
+### Slice ERC-8128 ✅
+Slice is implemented as the **AI agent authentication layer** — all API routes in `cloak-hosted` now accept wallet-signed HTTP requests in addition to Supabase JWTs.
 
-Currently the codebase uses Supabase. Slice will replace `supabase.auth` on both the frontend and cloak-hosted API routes.
+How it works:
+1. Agent signs every HTTP request with a Celo wallet (RFC 9421 + Ethereum ECDSA)
+2. Cloak verifies the signature via `@slicekit/erc8128` + viem on Celo mainnet (chain 42220)
+3. The wallet address (lowercased) becomes the `userId` for vault encryption
+4. Nonces are stored in-memory with 5-minute TTL to prevent replay attacks
+
+Discovery document live at: `https://cloak-hosted.vercel.app/.well-known/erc8128`
+
+All 6 API routes support dual auth: ERC-8128 wallet signatures OR Supabase Bearer token.
 
 ---
 
