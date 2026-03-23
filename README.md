@@ -249,7 +249,7 @@ The timing is perfect. Everyone is building AI agents right now. Almost nobody i
 
 ## For Judges — Try It in 2 Minutes
 
-**Live app:** https://cloak-hosted-lilac.vercel.app
+**Live app:** https://cloak-hosted-lilac.vercel.app | https://cloak-hosted.vercel.app
 
 1. Go to `/signup` — scan the QR code with the [Self app](https://self.xyz) to verify your identity with ZK proof, or skip and sign up with email
 2. On the dashboard, go to **Vault** → add a GitHub or Slack API key
