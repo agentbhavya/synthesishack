@@ -5,7 +5,7 @@ Cloak is a private AI agent vault. It lets AI agents take authorized actions on 
 **Hackathon:** The Synthesis (March 2026)
 **Repo:** https://github.com/TpgGirls/synthesishack
 **Team:** tpg's Team — tpg, bb007, Claude Code Agent, Claude
-**Live backend:** https://cloak-hosted.vercel.app
+**Live backend:** https://cloak-hosted-lilac.vercel.app | https://cloak-hosted.vercel.app
 **Live frontend:** https://frontend-cyan-nine-88.vercel.app
 **Tracks:** Venice AI · Self Protocol · Slice (ERC-8128) · Synthesis Open Track
 
