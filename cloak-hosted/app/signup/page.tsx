@@ -36,7 +36,10 @@ export default function SignupPage() {
     const { error } = await getSupabase().auth.signUp({
       email,
       password,
-      options: { data: { self_verified_id: selfUserId } },
+      options: {
+        data: { self_verified_id: selfUserId },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
     if (error) {
       setError(error.message);

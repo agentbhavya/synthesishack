@@ -12,7 +12,7 @@ const verifier = new SelfBackendVerifier(
   ENDPOINT,
   false, // not mock mode
   AllIds,
-  new DefaultConfigStore({ minimumAge: 18 }),
+  new DefaultConfigStore({ minimumAge: 18, excludedCountries: [] }),
   "uuid"
 );
 
