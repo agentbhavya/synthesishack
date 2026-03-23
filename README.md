@@ -34,6 +34,8 @@ There is no standard infrastructure for agents to perform authorized actions wit
 
 ## What Cloak Does
 
+Watch the live demo here: https://vimeo.com/1176148167?fl=ip&fe=ec
+
 Cloak is an MCP (Model Context Protocol) server that acts as a credential vault between AI agents and external APIs.
 
 ```
